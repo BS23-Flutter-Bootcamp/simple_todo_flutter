@@ -17,7 +17,7 @@ class SplashScreen extends StatelessWidget {
     });
 
     return Scaffold(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: const Color(0xFF00695C),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -25,7 +25,7 @@ class SplashScreen extends StatelessWidget {
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(40),
-                color: Colors.white,
+                color: const Color(0xFFFF6E40),
               ),
               padding: const EdgeInsets.all(20),
               child: Lottie.asset(
