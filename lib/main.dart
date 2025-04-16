@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Todo App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 191, 123, 20),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00695C)),
       ),
       home: const SplashScreen(),
     );
