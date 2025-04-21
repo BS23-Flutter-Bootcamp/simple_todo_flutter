@@ -5,10 +5,9 @@ import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:simple_todo_flutter/model/task.dart';
 
 class EditTaskScreen extends StatefulWidget {
+  const EditTaskScreen({super.key, required this.task, required this.index});
   final Task task;
   final int index;
-
-  const EditTaskScreen({super.key, required this.task, required this.index});
 
   @override
   State<EditTaskScreen> createState() => _EditTaskScreenState();
@@ -25,8 +24,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
-    _descriptionController =
-        TextEditingController(text: widget.task.description ?? '');
+    _descriptionController = TextEditingController(
+      text: widget.task.description ?? '',
+    );
     _dueDate = widget.task.dueDate;
     _isCompleted = widget.task.isCompleted;
   }
@@ -48,12 +48,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF00695C), // Deep Teal
+              primary: Color(0xFF00695C),
               onPrimary: Colors.white,
-              surface: Color(0xFFECEFF1), // Soft Slate Gray
-              onSurface: Color(0xFF263238), // Charcoal
+              surface: Color(0xFFECEFF1),
+              onSurface: Color(0xFF263238),
             ),
-            dialogBackgroundColor: const Color(0xFFECEFF1), // Soft Slate Gray
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFFECEFF1),
+            ),
           ),
           child: child!,
         );
@@ -73,26 +75,34 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         id: widget.task.id,
         title: _titleController.text,
         dueDate: _dueDate,
-        description: _descriptionController.text.isEmpty
-            ? null
-            : _descriptionController.text,
+        description:
+            _descriptionController.text.isEmpty
+                ? null
+                : _descriptionController.text,
         isCompleted: _isCompleted,
       );
-      viewModel.updateTask(updatedTask).then((_) {
-        Navigator.pop(context);
-      }).catchError((error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update task: $error'),
-            backgroundColor: const Color(0xFFB00020), // Error Red
-          ),
-        );
-      });
+      viewModel
+          .updateTask(updatedTask)
+          .then((_) {
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          })
+          .catchError((error) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Failed to update task: $error'),
+                  backgroundColor: const Color(0xFFB00020),
+                ),
+              );
+            }
+          });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a title'),
-          backgroundColor: Color(0xFFB00020), // Error Red
+          backgroundColor: Color(0xFFB00020),
         ),
       );
     }
@@ -100,16 +110,19 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
   void _deleteTask(BuildContext context) {
     final viewModel = Provider.of<TaskViewModel>(context, listen: false);
-    viewModel.deleteTask(widget.task.id!).then((_) {
-      Navigator.pop(context);
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to delete task: $error'),
-          backgroundColor: const Color(0xFFB00020), // Error Red
-        ),
-      );
-    });
+    viewModel
+        .deleteTask(widget.task.id!)
+        .then((_) {
+          Navigator.pop(context);
+        })
+        .catchError((error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to delete task: $error'),
+              backgroundColor: const Color(0xFFB00020),
+            ),
+          );
+        });
   }
 
   @override
@@ -117,9 +130,9 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Task'),
-        backgroundColor: const Color(0xFF00695C), // Deep Teal
+        backgroundColor: const Color(0xFF00695C),
       ),
-      backgroundColor: const Color(0xFFECEFF1), // Soft Slate Gray
+      backgroundColor: const Color(0xFFECEFF1),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -132,12 +145,12 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Title',
                   border: OutlineInputBorder(),
-                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFFF6E40)), // Coral Glow
+                    borderSide: BorderSide(color: Color(0xFFFF6E40)),
                   ),
                 ),
-                style: const TextStyle(color: Color(0xFF263238)), // Charcoal
+                style: const TextStyle(color: Color(0xFF263238)),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Title is required';
@@ -152,16 +165,16 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Due Date (optional)',
                     border: OutlineInputBorder(),
-                    labelStyle: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                    labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFFFF6E40)), // Coral Glow
+                      borderSide: BorderSide(color: Color(0xFFFF6E40)),
                     ),
                   ),
                   child: Text(
                     _dueDate != null
                         ? DateFormat('MMM d, yyyy').format(_dueDate!)
                         : 'Select a date',
-                    style: const TextStyle(color: Color(0xFF263238)), // Charcoal
+                    style: const TextStyle(color: Color(0xFF263238)),
                   ),
                 ),
               ),
@@ -171,12 +184,12 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Description (optional)',
                   border: OutlineInputBorder(),
-                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFFF6E40)), // Coral Glow
+                    borderSide: BorderSide(color: Color(0xFFFF6E40)),
                   ),
                 ),
-                style: const TextStyle(color: Color(0xFF263238)), // Charcoal
+                style: const TextStyle(color: Color(0xFF263238)),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
@@ -189,12 +202,12 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                         _isCompleted = value ?? false;
                       });
                     },
-                    activeColor: const Color(0xFF00695C), // Deep Teal
+                    activeColor: const Color(0xFF00695C),
                     checkColor: Colors.white,
                   ),
                   const Text(
                     'Completed',
-                    style: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                    style: TextStyle(color: Color(0xFF4DB6AC)),
                   ),
                 ],
               ),
@@ -206,17 +219,20 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                     onPressed: () => _deleteTask(context),
                     child: const Text(
                       'Delete',
-                      style: TextStyle(color: Color(0xFFB00020)), // Error Red
+                      style: TextStyle(color: Color(0xFFB00020)),
                     ),
                   ),
                   const SizedBox(width: 8),
-                
+
                   ElevatedButton(
                     onPressed: () => _saveTask(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00695C), // Deep Teal
+                      backgroundColor: const Color(0xFF00695C),
                     ),
-                    child: const Text('Save',style: TextStyle(color: Colors.white),),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),

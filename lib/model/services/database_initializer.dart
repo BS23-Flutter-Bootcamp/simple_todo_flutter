@@ -17,6 +17,8 @@ class DatabaseInitializer {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
     return await openDatabase(path, version: 3, onCreate: _createDB, onUpgrade: _upgradeDB);
+    
+
   }
 
   Future _createDB(Database db, int version) async {

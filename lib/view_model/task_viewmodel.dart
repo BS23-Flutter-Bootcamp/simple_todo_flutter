@@ -13,16 +13,30 @@ class TaskViewModel extends ChangeNotifier {
       _tasks = await _taskRepository.getTasks();
       notifyListeners();
     } catch (e) {
-      print('Error loading tasks: $e');
+      if (kDebugMode) {
+        print('Error loading tasks: $e');
+      }
     }
   }
 
-  Future<void> addTask(String title, DateTime? dueDate, String? description, bool isCompleted) async {
+  Future<void> addTask({
+    required String title,
+    DateTime? dueDate,
+    String? description,
+    bool isCompleted = false,
+  }) async {
     try {
-      await _taskRepository.addTask(title, dueDate, description, isCompleted);
+      await _taskRepository.addTask(
+        title: title,
+        dueDate: dueDate,
+        description: description,
+        isCompleted: isCompleted,
+      );
       await loadTasks();
     } catch (e) {
-      print('Error adding task: $e');
+      if (kDebugMode) {
+        print('Error adding task: $e');
+      }
       rethrow;
     }
   }
@@ -32,7 +46,9 @@ class TaskViewModel extends ChangeNotifier {
       await _taskRepository.updateTask(task);
       await loadTasks();
     } catch (e) {
-      print('Error updating task: $e');
+      if (kDebugMode) {
+        print('Error updating task: $e');
+      }
       rethrow;
     }
   }
@@ -42,7 +58,9 @@ class TaskViewModel extends ChangeNotifier {
       await _taskRepository.toggleTaskCompletion(task);
       await loadTasks();
     } catch (e) {
-      print('Error toggling task completion: $e');
+      if (kDebugMode) {
+        print('Error toggling task completion: $e');
+      }
       rethrow;
     }
   }
@@ -52,7 +70,9 @@ class TaskViewModel extends ChangeNotifier {
       await _taskRepository.deleteTask(id);
       await loadTasks();
     } catch (e) {
-      print('Error deleting task: $e');
+      if (kDebugMode) {
+        print('Error deleting task: $e');
+      }
       rethrow;
     }
   }

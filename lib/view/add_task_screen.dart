@@ -34,14 +34,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF00695C), // Deep Teal
+              primary: Color(0xFF00695C),
               onPrimary: Colors.white,
-              surface: Color(0xFFECEFF1), // Soft Slate Gray
-              onSurface: Color(0xFF263238), // Charcoal
+              surface: Color(0xFFECEFF1),
+              onSurface: Color(0xFF263238),
             ),
-            dialogTheme: const DialogTheme(
-              backgroundColor: Color(0xFFECEFF1), // Soft Slate Gray
-            ),
+            dialogTheme: const DialogTheme(backgroundColor: Color(0xFFECEFF1)),
           ),
           child: child!,
         );
@@ -59,12 +57,13 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       final viewModel = Provider.of<TaskViewModel>(context, listen: false);
       viewModel
           .addTask(
-            _titleController.text,
-            _dueDate,
-            _descriptionController.text.isEmpty
-                ? null
-                : _descriptionController.text,
-            _isCompleted,
+            title: _titleController.text,
+            dueDate: _dueDate,
+            description:
+                _descriptionController.text.isEmpty
+                    ? null
+                    : _descriptionController.text,
+            isCompleted: _isCompleted,
           )
           .then((_) {
             Navigator.pop(context);
@@ -73,7 +72,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Failed to add task: $error'),
-                backgroundColor: const Color(0xFFB00020), // Error Red
+                backgroundColor: const Color(0xFFB00020),
               ),
             );
           });
@@ -81,7 +80,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter a title'),
-          backgroundColor: Color(0xFFB00020), // Error Red
+          backgroundColor: Color(0xFFB00020),
         ),
       );
     }
@@ -92,9 +91,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Task'),
-        backgroundColor: const Color(0xFF00695C), // Deep Teal
+        backgroundColor: const Color(0xFF00695C),
       ),
-      backgroundColor: const Color(0xFFECEFF1), // Soft Slate Gray
+      backgroundColor: const Color(0xFFECEFF1),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -107,14 +106,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Title',
                   border: OutlineInputBorder(),
-                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFFFF6E40),
-                    ), // Coral Glow
+                    borderSide: BorderSide(color: Color(0xFFFF6E40)),
                   ),
                 ),
-                style: const TextStyle(color: Color(0xFF263238)), // Charcoal
+                style: const TextStyle(color: Color(0xFF263238)),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Title is required';
@@ -129,22 +126,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Due Date (optional)',
                     border: OutlineInputBorder(),
-                    labelStyle: TextStyle(
-                      color: Color(0xFF4DB6AC),
-                    ), // Muted Teal
+                    labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: Color(0xFFFF6E40),
-                      ), // Coral Glow
+                      borderSide: BorderSide(color: Color(0xFFFF6E40)),
                     ),
                   ),
                   child: Text(
                     _dueDate != null
                         ? DateFormat('MMM d, yyyy').format(_dueDate!)
                         : 'Select a date',
-                    style: const TextStyle(
-                      color: Color(0xFF263238),
-                    ), // Charcoal
+                    style: const TextStyle(color: Color(0xFF263238)),
                   ),
                 ),
               ),
@@ -154,14 +145,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Description (optional)',
                   border: OutlineInputBorder(),
-                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                  labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Color(0xFFFF6E40),
-                    ), // Coral Glow
+                    borderSide: BorderSide(color: Color(0xFFFF6E40)),
                   ),
                 ),
-                style: const TextStyle(color: Color(0xFF263238)), // Charcoal
+                style: const TextStyle(color: Color(0xFF263238)),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
@@ -174,12 +163,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         _isCompleted = value ?? false;
                       });
                     },
-                    activeColor: const Color(0xFF00695C), // Deep Teal
+                    activeColor: const Color(0xFF00695C),
                     checkColor: Colors.white,
                   ),
                   const Text(
                     'Completed',
-                    style: TextStyle(color: Color(0xFF4DB6AC)), // Muted Teal
+                    style: TextStyle(color: Color(0xFF4DB6AC)),
                   ),
                 ],
               ),
@@ -191,14 +180,14 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     onPressed: () => Navigator.pop(context),
                     child: const Text(
                       'Cancel',
-                      style: TextStyle(color: Color(0xFF263238)), // Charcoal
+                      style: TextStyle(color: Color(0xFF263238)),
                     ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => _saveTask(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00695C), // Deep Teal
+                      backgroundColor: const Color(0xFF00695C),
                     ),
                     child: const Text(
                       'Save',

@@ -1,37 +1,31 @@
-import 'package:simple_todo_flutter/model/task.dart';
 import 'package:simple_todo_flutter/model/services/database_initializer.dart';
 
 class TaskService {
   final DatabaseInitializer _dbInitializer = DatabaseInitializer.instance;
 
-  Future<void> insertTask(Task task) async {
+  Future<void> insertTask(Map<String, dynamic> taskMap) async {
     final db = await _dbInitializer.database;
-    await db.insert('tasks', task.toMap());
+    await db.insert('tasks', taskMap);
   }
 
-  Future<List<Task>> getTasks() async {
+  Future<List<Map<String, dynamic>>> getTasks() async {
     final db = await _dbInitializer.database;
-    final maps = await db.query('tasks');
-    return List.generate(maps.length, (i) => Task.fromMap(maps[i]));
+    return await db.query('tasks');
   }
 
-  Future<void> updateTask(Task task) async {
+  Future<void> updateTask(Map<String, dynamic> taskMap) async {
     final db = await _dbInitializer.database;
     await db.update(
       'tasks',
-      task.toMap(),
+      taskMap,
       where: 'id = ?',
-      whereArgs: [task.id],
+      whereArgs: [taskMap['id']],
     );
   }
 
   Future<void> deleteTask(int id) async {
     final db = await _dbInitializer.database;
-    await db.delete(
-      'tasks',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> close() async {
