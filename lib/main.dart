@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:simple_todo_flutter/view/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,22 +14,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Todo App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 191, 123, 20),
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00695C)),
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text("Todo App"),
-          backgroundColor: const Color.fromARGB(255, 23, 153, 36),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: const [Text("Flutter Todo App")],
-          ),
-        ),
-      ),
+      home: const SplashScreen(),
     );
   }
 }
