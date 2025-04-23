@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+import 'package:simple_todo_flutter/view/widgets/custom_date_picker.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:simple_todo_flutter/model/task.dart';
 
@@ -38,35 +38,35 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     super.dispose();
   }
 
-  Future<void> _selectDueDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _dueDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData.light().copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Color(0xFF00695C),
-              onPrimary: Colors.white,
-              surface: Color(0xFFECEFF1),
-              onSurface: Color(0xFF263238),
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: const Color(0xFFECEFF1),
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && picked != _dueDate) {
-      setState(() {
-        _dueDate = picked;
-      });
-    }
-  }
+  // Future<void> _selectDueDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: _dueDate ?? DateTime.now(),
+  //     firstDate: DateTime.now(),
+  //     lastDate: DateTime(2100),
+  //     builder: (context, child) {
+  //       return Theme(
+  //         data: ThemeData.light().copyWith(
+  //           colorScheme: const ColorScheme.light(
+  //             primary: Color(0xFF00695C),
+  //             onPrimary: Colors.white,
+  //             surface: Color(0xFFECEFF1),
+  //             onSurface: Color(0xFF263238),
+  //           ),
+  //           dialogTheme: DialogThemeData(
+  //             backgroundColor: const Color(0xFFECEFF1),
+  //           ),
+  //         ),
+  //         child: child!,
+  //       );
+  //     },
+  //   );
+  //   if (picked != null && picked != _dueDate) {
+  //     setState(() {
+  //       _dueDate = picked;
+  //     });
+  //   }
+  // }
 
   void _saveTask(BuildContext context) {
     if (_formKey.currentState!.validate()) {
@@ -113,15 +113,19 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     viewModel
         .deleteTask(widget.task.id!)
         .then((_) {
-          Navigator.pop(context);
+          if (context.mounted) {
+            Navigator.pop(context);
+          }
         })
         .catchError((error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to delete task: $error'),
-              backgroundColor: const Color(0xFFB00020),
-            ),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to delete task: $error'),
+                backgroundColor: const Color(0xFFB00020),
+              ),
+            );
+          }
         });
   }
 
@@ -159,25 +163,33 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => _selectDueDate(context),
-                child: InputDecorator(
-                  decoration: const InputDecoration(
-                    labelText: 'Due Date (optional)',
-                    border: OutlineInputBorder(),
-                    labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Color(0xFFFF6E40)),
-                    ),
-                  ),
-                  child: Text(
-                    _dueDate != null
-                        ? DateFormat('MMM d, yyyy').format(_dueDate!)
-                        : 'Select a date',
-                    style: const TextStyle(color: Color(0xFF263238)),
-                  ),
-                ),
+              CustomDatePicker(
+                selectedDate: _dueDate,
+                onDateChanged: (newDate) {
+                  setState(() {
+                    _dueDate = newDate;
+                  });
+                },
               ),
+              // GestureDetector(
+              //   onTap: () => _selectDueDate(context),
+              //   child: InputDecorator(
+              //     decoration: const InputDecoration(
+              //       labelText: 'Due Date (optional)',
+              //       border: OutlineInputBorder(),
+              //       labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
+              //       focusedBorder: OutlineInputBorder(
+              //         borderSide: BorderSide(color: Color(0xFFFF6E40)),
+              //       ),
+              //     ),
+              //     child: Text(
+              //       _dueDate != null
+              //           ? DateFormat('MMM d, yyyy').format(_dueDate!)
+              //           : 'Select a date',
+              //       style: const TextStyle(color: Color(0xFF263238)),
+              //     ),
+              //   ),
+              // ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,

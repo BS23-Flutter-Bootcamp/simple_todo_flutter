@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "951071912640",
+    "project_id": "simple-todo-list-21",
+    "storage_bucket": "simple-todo-list-21.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951071912640:android:fa63a5f9a3caa9f2707325",
+        "android_client_info": {
+          "package_name": "com.example.simple_todo_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuwqE-r_jnzRqPfDnpJDuu1bzC_udgXZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

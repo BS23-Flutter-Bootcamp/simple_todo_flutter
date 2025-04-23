@@ -59,21 +59,17 @@ class HomeScreen extends StatelessWidget {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (task.description != null)
+                            Text(
+                              task.description!,
+                              style: const TextStyle(color: Color(0xFF4DB6AC)),
+                            ),
                           Text(
                             task.dueDate != null
                                 ? 'Due: ${DateFormat('MMM d, yyyy').format(task.dueDate!)}'
                                 : 'No due date',
-                            style: const TextStyle(
-                              color: Color(0xFF4DB6AC),
-                            ), 
+                            style: const TextStyle(color: Color(0xFF4DB6AC)),
                           ),
-                          if (task.description != null)
-                            Text(
-                              task.description!,
-                              style: const TextStyle(
-                                color: Color(0xFF4DB6AC),
-                              ),
-                            ),
                         ],
                       ),
                       onTap: () {

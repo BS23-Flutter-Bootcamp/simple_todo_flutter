@@ -1,0 +1,16 @@
+import 'package:simple_todo_flutter/model/services/login_service.dart';
+
+class LoginRepository {
+  final LoginService _loginService;
+  LoginRepository(this._loginService);
+  Future<void> signIn({required email, required String password}) async {
+    try {
+      await _loginService.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+    } catch (e) {
+      throw Exception(e);
+    }
+  }
+}

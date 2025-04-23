@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
-import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
-import 'package:simple_todo_flutter/view/home_screen.dart';
+import 'package:simple_todo_flutter/view/login_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -11,14 +9,10 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     Future.delayed(const Duration(seconds: 2), () async {
       if (context.mounted) {
-        final viewModel = Provider.of<TaskViewModel>(context, listen: false);
-        await viewModel.loadTasks();
-        if (context.mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
-          );
-        }
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
       }
     });
 
