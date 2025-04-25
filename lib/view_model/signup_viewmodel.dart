@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:simple_todo_flutter/model/repository/signup_repository.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
+import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 
 class SignUpViewModel {
   SignUpViewModel(this.authRepository);
@@ -19,11 +21,9 @@ class SignUpViewModel {
       if (username.isEmpty) {
         throw 'Please enter a username';
       }
-
       if (!email.contains('@')) {
         throw 'Please enter a valid email';
       }
-
       if (password.length < 6) {
         throw 'Password must be at least 6 characters';
       }
@@ -36,10 +36,18 @@ class SignUpViewModel {
 
       await authRepository.signUp(email: email, password: password);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+      final userId = authRepository.firebaseAuth.currentUser?.uid;
+      if (userId != null) {
+        final taskViewModel = Provider.of<TaskViewModel>(context, listen: false);
+        await taskViewModel.onUserLogin(userId);
+      }
+
+      if (context.mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
     } catch (e) {
       setState(() {
         errorMessage = e.toString();

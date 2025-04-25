@@ -11,6 +11,7 @@ class LoginViewModel {
   bool rememberMe = false;
   String? errorMessage;
   LoginViewModel(this.authRepository);
+
   void onRememberMeChanged(bool? value, Function setState) {
     setState(() {
       rememberMe = value ?? false;
@@ -33,7 +34,27 @@ class LoginViewModel {
       await authRepository.signIn(email: email, password: password);
       if (context.mounted) {
         final viewModel = Provider.of<TaskViewModel>(context, listen: false);
-        await viewModel.loadTasks();
+        final userId = authRepository.firebaseAuth.currentUser?.uid;
+        if (userId != null) {
+          try {
+            await viewModel.onUserLogin(userId);
+          } catch (e) {
+            if (kDebugMode) {
+              print('Error fetching tasks: $e');
+            }
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Logged in, but failed to fetch tasks.',
+                  style: const TextStyle(color: Color(0xFFD32F2F)),
+                ),
+                backgroundColor: Colors.white,
+              ),
+            );
+          }
+        } else {
+          throw 'Failed to retrieve user ID after login';
+        }
         if (context.mounted) {
           Navigator.pushReplacement(
             context,
@@ -42,7 +63,9 @@ class LoginViewModel {
         }
       }
     } catch (e) {
-      // Update error message and show SnackBar
+      if (kDebugMode) {
+        print('Sign-in failed: $e');
+      }
       setState(() {
         errorMessage = e.toString();
       });
@@ -50,7 +73,7 @@ class LoginViewModel {
         SnackBar(
           content: Text(
             errorMessage ?? 'Login failed',
-            style: const TextStyle(color: Color(0xFFD32F2F)), // Error Red
+            style: const TextStyle(color: Color(0xFFD32F2F)),
           ),
           backgroundColor: Colors.white,
         ),

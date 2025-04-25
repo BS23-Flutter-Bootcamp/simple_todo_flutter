@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_todo_flutter/model/repository/login_repository.dart';
 import 'package:simple_todo_flutter/model/services/login_service.dart';
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   late final LoginViewModel viewModel;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -28,6 +30,30 @@ class _LoginScreenState extends State<LoginScreen> {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleSignIn() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      await viewModel.signIn(
+        context: context,
+        setState: setState,
+        email: emailController.text,
+        password: passwordController.text,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error during sign-in: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -71,6 +97,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
                         ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFFF6F61)),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16.0),
@@ -82,6 +111,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         labelText: 'Password',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFFF6F61)),
                         ),
                       ),
                     ),
@@ -117,27 +149,31 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed:
-                            () => viewModel.signIn(
-                              context: context,
-                              setState: setState,
-                              email: emailController.text,
-                              password: passwordController.text,
-                            ),
+                        onPressed: _isLoading ? null : _handleSignIn,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF00695C),
+                          backgroundColor: const Color(0xFF00695C),
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 16.0,
-                            color: Color.fromARGB(255, 10, 10, 10),
-                          ),
-                        ),
+                        child:
+                            _isLoading
+                                ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                                : const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    color: Color.fromARGB(255, 10, 10, 10),
+                                  ),
+                                ),
                       ),
                     ),
                     const SizedBox(height: 16.0),

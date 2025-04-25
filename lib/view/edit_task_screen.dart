@@ -19,6 +19,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   late final TextEditingController _descriptionController;
   late DateTime? _dueDate;
   late bool _isCompleted;
+  bool _isSaving = false;
+  bool _isDeleting = false;
 
   @override
   void initState() {
@@ -38,41 +40,14 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     super.dispose();
   }
 
-  // Future<void> _selectDueDate(BuildContext context) async {
-  //   final DateTime? picked = await showDatePicker(
-  //     context: context,
-  //     initialDate: _dueDate ?? DateTime.now(),
-  //     firstDate: DateTime.now(),
-  //     lastDate: DateTime(2100),
-  //     builder: (context, child) {
-  //       return Theme(
-  //         data: ThemeData.light().copyWith(
-  //           colorScheme: const ColorScheme.light(
-  //             primary: Color(0xFF00695C),
-  //             onPrimary: Colors.white,
-  //             surface: Color(0xFFECEFF1),
-  //             onSurface: Color(0xFF263238),
-  //           ),
-  //           dialogTheme: DialogThemeData(
-  //             backgroundColor: const Color(0xFFECEFF1),
-  //           ),
-  //         ),
-  //         child: child!,
-  //       );
-  //     },
-  //   );
-  //   if (picked != null && picked != _dueDate) {
-  //     setState(() {
-  //       _dueDate = picked;
-  //     });
-  //   }
-  // }
-
-  void _saveTask(BuildContext context) {
+  void _saveTask(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSaving = true;
+      });
+
       final viewModel = Provider.of<TaskViewModel>(context, listen: false);
-      final updatedTask = Task(
-        id: widget.task.id,
+      final updatedTask = widget.task.copyWith(
         title: _titleController.text,
         dueDate: _dueDate,
         description:
@@ -81,23 +56,28 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 : _descriptionController.text,
         isCompleted: _isCompleted,
       );
-      viewModel
-          .updateTask(updatedTask)
-          .then((_) {
-            if (context.mounted) {
-              Navigator.pop(context);
-            }
-          })
-          .catchError((error) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to update task: $error'),
-                  backgroundColor: const Color(0xFFB00020),
-                ),
-              );
-            }
+
+      try {
+        await viewModel.updateTask(updatedTask);
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+      } catch (error) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update task: $error'),
+              backgroundColor: const Color(0xFFB00020),
+            ),
+          );
+        }
+      } finally {
+        if (context.mounted) {
+          setState(() {
+            _isSaving = false;
           });
+        }
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -108,25 +88,33 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     }
   }
 
-  void _deleteTask(BuildContext context) {
+  void _deleteTask(BuildContext context) async {
+    setState(() {
+      _isDeleting = true;
+    });
+
     final viewModel = Provider.of<TaskViewModel>(context, listen: false);
-    viewModel
-        .deleteTask(widget.task.id!)
-        .then((_) {
-          if (context.mounted) {
-            Navigator.pop(context);
-          }
-        })
-        .catchError((error) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Failed to delete task: $error'),
-                backgroundColor: const Color(0xFFB00020),
-              ),
-            );
-          }
+    try {
+      await viewModel.deleteTask(widget.task.id!);
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+    } catch (error) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete task: $error'),
+            backgroundColor: const Color(0xFFB00020),
+          ),
+        );
+      }
+    } finally {
+      if (context.mounted) {
+        setState(() {
+          _isDeleting = false;
         });
+      }
+    }
   }
 
   @override
@@ -163,34 +151,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              CustomDatePicker(
-                selectedDate: _dueDate,
-                onDateChanged: (newDate) {
-                  setState(() {
-                    _dueDate = newDate;
-                  });
-                },
-              ),
-              // GestureDetector(
-              //   onTap: () => _selectDueDate(context),
-              //   child: InputDecorator(
-              //     decoration: const InputDecoration(
-              //       labelText: 'Due Date (optional)',
-              //       border: OutlineInputBorder(),
-              //       labelStyle: TextStyle(color: Color(0xFF4DB6AC)),
-              //       focusedBorder: OutlineInputBorder(
-              //         borderSide: BorderSide(color: Color(0xFFFF6E40)),
-              //       ),
-              //     ),
-              //     child: Text(
-              //       _dueDate != null
-              //           ? DateFormat('MMM d, yyyy').format(_dueDate!)
-              //           : 'Select a date',
-              //       style: const TextStyle(color: Color(0xFF263238)),
-              //     ),
-              //   ),
-              // ),
-              const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
@@ -203,6 +163,16 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 ),
                 style: const TextStyle(color: Color(0xFF263238)),
                 maxLines: 3,
+                minLines: 1,
+              ),
+              const SizedBox(height: 16),
+              CustomDatePicker(
+                selectedDate: _dueDate,
+                onDateChanged: (newDate) {
+                  setState(() {
+                    _dueDate = newDate;
+                  });
+                },
               ),
               const SizedBox(height: 16),
               Row(
@@ -228,23 +198,42 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () => _deleteTask(context),
-                    child: const Text(
-                      'Delete',
-                      style: TextStyle(color: Color(0xFFB00020)),
-                    ),
+                    onPressed: _isDeleting ? null : () => _deleteTask(context),
+                    child:
+                        _isDeleting
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFB00020),
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : const Text(
+                              'Delete',
+                              style: TextStyle(color: Color(0xFFB00020)),
+                            ),
                   ),
                   const SizedBox(width: 8),
-
                   ElevatedButton(
-                    onPressed: () => _saveTask(context),
+                    onPressed: _isSaving ? null : () => _saveTask(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00695C),
                     ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child:
+                        _isSaving
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : const Text(
+                              'Save',
+                              style: TextStyle(color: Colors.white),
+                            ),
                   ),
                 ],
               ),

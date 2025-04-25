@@ -1,19 +1,56 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:simple_todo_flutter/view/login_screen.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:simple_todo_flutter/view/add_task_screen.dart';
 import 'package:simple_todo_flutter/view/edit_task_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('ToDo List')),
+        title: const Center(
+          child: Text('ToDo List', style: TextStyle(color: Colors.white)),
+        ),
         backgroundColor: const Color(0xFF00695C),
+        leading: Consumer<TaskViewModel>(
+          builder: (context, viewModel, child) {
+            return viewModel.isSyncing
+                ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(color: Colors.white),
+                )
+                : IconButton(
+                  icon: const Icon(Icons.sync, color: Colors.white),
+                  onPressed: () => viewModel.syncTasks(),
+                );
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                );
+              }
+            },
+            tooltip: 'Logout',
+          ),
+        ],
       ),
       backgroundColor: const Color(0xFFECEFF1),
       body: Consumer<TaskViewModel>(
@@ -68,7 +105,9 @@ class HomeScreen extends StatelessWidget {
                             task.dueDate != null
                                 ? 'Due: ${DateFormat('MMM d, yyyy').format(task.dueDate!)}'
                                 : 'No due date',
-                            style: const TextStyle(color: Color(0xFF4DB6AC)),
+                            style: const TextStyle(
+                              color: Color.fromARGB(255, 24, 109, 100),
+                            ),
                           ),
                         ],
                       ),
@@ -96,7 +135,7 @@ class HomeScreen extends StatelessWidget {
           );
         },
         backgroundColor: const Color(0xFF00695C),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

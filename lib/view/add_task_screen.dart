@@ -16,6 +16,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final _descriptionController = TextEditingController();
   DateTime? _dueDate;
   bool _isCompleted = false;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -24,34 +25,42 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     super.dispose();
   }
 
-  void _saveTask(BuildContext context) {
+  void _saveTask(BuildContext context) async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSaving = true;
+      });
+
       final viewModel = Provider.of<TaskViewModel>(context, listen: false);
-      viewModel
-          .addTask(
-            title: _titleController.text,
-            dueDate: _dueDate,
-            description:
-                _descriptionController.text.isEmpty
-                    ? null
-                    : _descriptionController.text,
-            isCompleted: _isCompleted,
-          )
-          .then((_) {
-            if (context.mounted) {
-              Navigator.pop(context);
-            }
-          })
-          .catchError((error) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Failed to add task: $error'),
-                  backgroundColor: const Color(0xFFB00020),
-                ),
-              );
-            }
+      try {
+        await viewModel.addTask(
+          title: _titleController.text,
+          dueDate: _dueDate,
+          description:
+              _descriptionController.text.isEmpty
+                  ? null
+                  : _descriptionController.text,
+          isCompleted: _isCompleted,
+        );
+        if (context.mounted) {
+          Navigator.pop(context);
+        }
+      } catch (error) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to add task: $error'),
+              backgroundColor: const Color(0xFFB00020),
+            ),
+          );
+        }
+      } finally {
+        if (context.mounted) {
+          setState(() {
+            _isSaving = false;
           });
+        }
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -96,15 +105,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              CustomDatePicker(
-                selectedDate: _dueDate,
-                onDateChanged: (newDate) {
-                  setState(() {
-                    _dueDate = newDate;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
@@ -117,6 +117,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 ),
                 style: const TextStyle(color: Color(0xFF263238)),
                 maxLines: 3,
+                minLines: 1,
+              ),
+              const SizedBox(height: 16),
+              CustomDatePicker(
+                selectedDate: _dueDate,
+                onDateChanged: (newDate) {
+                  setState(() {
+                    _dueDate = newDate;
+                  });
+                },
               ),
               const SizedBox(height: 16),
               Row(
@@ -150,14 +160,24 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () => _saveTask(context),
+                    onPressed: _isSaving ? null : () => _saveTask(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF00695C),
                     ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child:
+                        _isSaving
+                            ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : const Text(
+                              'Save',
+                              style: TextStyle(color: Colors.white),
+                            ),
                   ),
                 ],
               ),

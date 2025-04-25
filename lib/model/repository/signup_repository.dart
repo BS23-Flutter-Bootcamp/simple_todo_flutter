@@ -3,6 +3,7 @@ import 'package:simple_todo_flutter/model/services/signup_service.dart';
 class SignupRepository {
   final SignupService _signupService;
   SignupRepository(this._signupService);
+  get firebaseAuth => _signupService.firebaseAuth;
   Future<void> signUp({required email, required String password}) async {
     try {
       await _signupService.signUpWithEmailAndPassword(

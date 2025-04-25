@@ -1,10 +1,16 @@
+import 'package:flutter/foundation.dart';
+import 'package:simple_todo_flutter/model/services/firestore_service.dart';
 import 'package:simple_todo_flutter/model/services/task_service.dart';
 import 'package:simple_todo_flutter/model/task.dart';
 
 class TaskRepository {
-  final TaskService _taskService = TaskService();
+  TaskRepository(this._taskService, this._firestoreService);
+
+  final TaskService _taskService;
+  final FirestoreService _firestoreService;
 
   Future<void> addTask({
+    required String userId,
     required String title,
     DateTime? dueDate,
     String? description,
@@ -14,67 +20,108 @@ class TaskRepository {
       throw Exception('Title cannot be empty');
     }
     final task = Task(
+      userId: userId,
       title: title.trim(),
       dueDate: dueDate,
       description: description?.trim(),
       isCompleted: isCompleted,
+      lastModified: DateTime.now(),
+      syncStatus: 'pending',
     );
-    await _taskService.insertTask(TaskMapper.toMap(task));
+    await _taskService.insertTask(task);
   }
 
-  Future<List<Task>> getTasks() async {
-    final maps = await _taskService.getTasks();
-    return maps.map((map) => TaskMapper.fromMap(map)).toList();
+  Future<List<Task>> getTasks(String userId) async {
+    return await _taskService.getTasks(userId);
   }
 
   Future<void> updateTask(Task task) async {
     if (task.title.isEmpty) {
       throw Exception('Title cannot be empty');
     }
-    final updatedTask = Task(
-      id: task.id,
-      title: task.title.trim(),
-      dueDate: task.dueDate,
-      description: task.description?.trim(),
-      isCompleted: task.isCompleted,
+    final updatedTask = task.copyWith(
+      lastModified: DateTime.now(),
+      syncStatus: 'pending',
     );
-    await _taskService.updateTask(TaskMapper.toMap(updatedTask));
+    await _taskService.updateTask(updatedTask);
   }
 
   Future<void> toggleTaskCompletion(Task task) async {
-    final updatedTask = Task(
-      id: task.id,
-      title: task.title,
-      dueDate: task.dueDate,
-      description: task.description,
+    final updatedTask = task.copyWith(
       isCompleted: !task.isCompleted,
+      lastModified: DateTime.now(),
+      syncStatus: 'pending',
     );
-    await _taskService.updateTask(TaskMapper.toMap(updatedTask));
+    await _taskService.updateTask(updatedTask);
   }
 
-  Future<void> deleteTask(int id) async {
-    await _taskService.deleteTask(id);
-  }
-}
-
-class TaskMapper {
-  static Map<String, dynamic> toMap(Task task) {
-    return {
-      'id': task.id,
-      'title': task.title,
-      'dueDate': task.dueDate?.toIso8601String(),
-      'description': task.description,
-      'isCompleted': task.isCompleted ? 1 : 0,
-    };
-  }
-
-  static Task fromMap(Map<String, dynamic> map) {
-    return Task(
-      id: map['id'],
-      title: map['title'],
-      dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
-      description: map['description'],
-      isCompleted: map['isCompleted'] == 1,
+  Future<void> deleteTask(int id, String userId) async {
+    final tasks = await _taskService.getTasks(userId);
+    final task = tasks.firstWhere(
+      (t) => t.id == id,
+      orElse: () => throw 'Task not found',
     );
+    final updatedTask = task.copyWith(
+      syncStatus: 'deleted',
+      lastModified: DateTime.now(),
+    );
+    await _taskService.updateTask(updatedTask);
+  }
+
+  Future<void> syncTasks(String userId) async {
+    try {
+      final pendingTasks = await _taskService.getPendingTasks(userId);
+      for (final task in pendingTasks) {
+        if (task.syncStatus == 'deleted') {
+          await _firestoreService.deleteTask(userId, task.id!);
+        } else {
+          await _firestoreService.syncTask(userId, task);
+        }
+        if (task.syncStatus == 'deleted') {
+          await _taskService.deleteTask(task.id!);
+        } else {
+          await _taskService.updateTask(task.copyWith(syncStatus: 'synced'));
+        }
+      }
+      await _syncFromFirestore(userId);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Sync failed: $e');
+      }
+    }
+  }
+
+  Future<void> _syncFromFirestore(String userId) async {
+    final firestoreTasks = await _firestoreService.getTasks(userId);
+    final localTasks = await _taskService.getTasks(userId);
+
+    for (final firestoreTask in firestoreTasks) {
+      final localTask = localTasks.firstWhere(
+        (t) => t.id == firestoreTask.id,
+        orElse:
+            () => Task(
+              id: firestoreTask.id,
+              userId: userId,
+              title: '',
+              isCompleted: false,
+              lastModified: DateTime.now(),
+              syncStatus: 'synced',
+            ),
+      );
+      if (localTask.title.isEmpty ||
+          firestoreTask.lastModified.isAfter(localTask.lastModified)) {
+        await _taskService.insertTask(firestoreTask);
+      } else if (localTask.lastModified.isAfter(firestoreTask.lastModified) &&
+          localTask.syncStatus == 'synced') {
+        await _firestoreService.syncTask(userId, localTask);
+      }
+    }
+
+    await _firestoreService.setLastSyncTime(userId, DateTime.now());
+  }
+
+  Future<void> fetchFromFirestore(String userId) async {
+   // await _taskService.clearTasksForUser(userId);
+    await _syncFromFirestore(userId);
   }
 }
