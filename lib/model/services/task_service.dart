@@ -5,9 +5,9 @@ import 'package:sqflite/sqflite.dart';
 class TaskService {
   final DatabaseInitializer _dbInitializer = DatabaseInitializer.instance;
 
-  Future<void> insertTask(Task task) async {
+  Future<int> insertTask(Task task) async {
     final db = await _dbInitializer.database;
-    await db.insert(
+    return await db.insert(
       'tasks',
       task.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,

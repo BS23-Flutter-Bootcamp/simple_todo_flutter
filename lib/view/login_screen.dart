@@ -118,34 +118,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     const SizedBox(height: 16.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: viewModel.rememberMe,
-                              onChanged:
-                                  (value) => viewModel.onRememberMeChanged(
-                                    value,
-                                    setState,
-                                  ),
-                              checkColor: Colors.white,
-                              activeColor: const Color(0xFFFF6F61),
-                            ),
-                            const Text('Remember me'),
-                          ],
-                        ),
-                        TextButton(
-                          onPressed: viewModel.onForgotPasswordTapped,
-                          child: const Text(
-                            'Forgot password?',
-                            style: TextStyle(color: Colors.blue),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16.0),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

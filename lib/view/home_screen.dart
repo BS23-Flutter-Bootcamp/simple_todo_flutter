@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:simple_todo_flutter/model/services/notification_service.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:simple_todo_flutter/view/add_task_screen.dart';
@@ -15,6 +16,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  Future<void> _handleLogout() async {
+    await FirebaseAuth.instance.signOut();
+    await NotificationService().cancelAllNotifications();
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,15 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (context.mounted) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              }
-            },
+            onPressed: _handleLogout,
             tooltip: 'Logout',
           ),
         ],

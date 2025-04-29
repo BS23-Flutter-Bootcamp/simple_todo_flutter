@@ -8,16 +8,8 @@ import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 
 class LoginViewModel {
   final LoginRepository authRepository;
-  bool rememberMe = false;
   String? errorMessage;
   LoginViewModel(this.authRepository);
-
-  void onRememberMeChanged(bool? value, Function setState) {
-    setState(() {
-      rememberMe = value ?? false;
-    });
-  }
-
   Future<void> signIn({
     required BuildContext context,
     required Function setState,
@@ -78,12 +70,6 @@ class LoginViewModel {
           backgroundColor: Colors.white,
         ),
       );
-    }
-  }
-
-  void onForgotPasswordTapped() {
-    if (kDebugMode) {
-      print('Forgot password tapped');
     }
   }
 

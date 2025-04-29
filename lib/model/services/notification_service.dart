@@ -1,0 +1,233 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+
+class NotificationService {
+  // Singleton pattern
+  static final NotificationService _notificationService =
+      NotificationService._internal();
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  factory NotificationService() {
+    return _notificationService;
+  }
+
+  NotificationService._internal();
+
+  static const channelId = "1";
+
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  static const AndroidNotificationDetails _androidNotificationDetails =
+      AndroidNotificationDetails(
+        channelId,
+        "thecodexhub",
+        channelDescription:
+            "This channel is responsible for all the local notifications",
+        // playSound: true,
+        // priority: Priority.high,
+        // importance: Importance.high,
+      );
+
+  static const NotificationDetails notificationDetails = NotificationDetails(
+    android: _androidNotificationDetails,
+  );
+
+  Future<void> _requestPermissions() async {
+    try {
+      final notificationStatus = await Permission.notification.request();
+      debugPrint('Notification permission status: $notificationStatus');
+
+      if (!notificationStatus.isGranted) {
+        debugPrint('Notification permission denied');
+        _showPermissionDialog('Notification');
+        return;
+      }
+
+      final alarmStatus = await Permission.scheduleExactAlarm.request();
+      debugPrint('Exact alarm permission status: $alarmStatus');
+
+      if (!alarmStatus.isGranted) {
+        _showPermissionDialog('Exact Alarm');
+      }
+    } catch (e) {
+      debugPrint('Error requesting permissions: $e');
+    }
+  }
+
+  Future<void> _showPermissionDialog(String permissionType) async {
+    if (navigatorKey.currentContext == null) {
+      debugPrint('No context available for dialog');
+      return;
+    }
+
+    final result = await showDialog<bool>(
+      context: navigatorKey.currentContext!,
+      builder:
+          (context) => AlertDialog(
+            title: Text('$permissionType Permission Required'),
+            content: Text(
+              'This app needs $permissionType permission to schedule notifications. '
+              'Please enable it in settings.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Open Settings'),
+              ),
+            ],
+          ),
+    );
+
+    if (result == true) {
+      await openAppSettings();
+    }
+  }
+
+  Future<void> scheduleTestNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    final scheduledTime = DateTime.now().add(const Duration(seconds: 10));
+
+    if (kDebugMode) {
+      print(
+        'Scheduling test notification for: $title time ${scheduledTime.toString()}',
+      );
+    }
+
+    try {
+      await flutterLocalNotificationsPlugin.zonedSchedule(
+        id,
+        title,
+        body,
+        tz.TZDateTime.from(scheduledTime, tz.local),
+        notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exact,
+      );
+      debugPendingNotifications();
+    } on Exception catch (e) {
+      if (kDebugMode) {
+        print('Error scheduling test notification: $e');
+      }
+      // Handle the error as needed
+      return;
+    }
+    if (kDebugMode) {
+      print(
+        'zonedSchedule Scheduling test notification for: $title time ${scheduledTime.toString()} ',
+      );
+    }
+  }
+
+  Future<bool> checkPermissions() async {
+    final notificationStatus = await Permission.notification.status;
+    final alarmStatus = await Permission.scheduleExactAlarm.status;
+
+    return notificationStatus.isGranted && alarmStatus.isGranted;
+  }
+
+  // Update init method to check permissions
+  Future<void> init() async {
+    final AndroidInitializationSettings androidInitializationSettings =
+        AndroidInitializationSettings("mipmap/ic_launcher");
+
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: androidInitializationSettings);
+
+    // Request and check permissions
+    await _requestPermissions();
+    final hasPermissions = await checkPermissions();
+    if (!hasPermissions) {
+      debugPrint('Warning: Not all permissions are granted');
+    }
+
+    tz.initializeTimeZones();
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> showNotification({
+    required int id,
+    required String? title,
+    required String? body,
+    String? payload,
+  }) async {
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+    );
+  }
+
+  Future<void> scheduleNotification(
+    int id,
+    String title,
+    String body,
+    DateTime eventDate,
+    TimeOfDay eventTime,
+    String payload, [
+    DateTimeComponents? dateTimeComponents,
+  ]) async {
+    final scheduledTime = eventDate.add(
+      Duration(hours: eventTime.hour, minutes: eventTime.minute),
+    );
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      title,
+      body,
+      tz.TZDateTime.from(scheduledTime, tz.local),
+      notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exact,
+
+      payload: payload,
+      matchDateTimeComponents: dateTimeComponents,
+    );
+    await debugPendingNotifications();
+  }
+
+  Future<bool> canScheduleExactAlarms() async {
+    try {
+      final status = await Permission.scheduleExactAlarm.status;
+      if (kDebugMode) {
+        print('Schedule exact alarm permission: $status');
+      }
+      return status.isGranted;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error checking exact alarm permission: $e');
+      }
+      return false;
+    }
+  }
+
+  Future<void> cancelNotification(int id) async {
+    await flutterLocalNotificationsPlugin.cancel(id);
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  Future<void> debugPendingNotifications() async {
+    final pendingNotifications =
+        await flutterLocalNotificationsPlugin.pendingNotificationRequests();
+    if (kDebugMode) {
+      print('Pending notifications: ${pendingNotifications.length}');
+      for (var notification in pendingNotifications) {
+        print(
+          'ID: ${notification.id}, Title: ${notification.title}, Body: ${notification.body}',
+        );
+      }
+    }
+  }
+}

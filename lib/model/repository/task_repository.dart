@@ -1,13 +1,19 @@
 import 'package:flutter/foundation.dart';
+import 'package:simple_todo_flutter/model/repository/notification_repository.dart';
 import 'package:simple_todo_flutter/model/services/firestore_service.dart';
 import 'package:simple_todo_flutter/model/services/task_service.dart';
 import 'package:simple_todo_flutter/model/task.dart';
 
 class TaskRepository {
-  TaskRepository(this._taskService, this._firestoreService);
+  TaskRepository(
+    this._taskService,
+    this._firestoreService,
+    this._notificationRepository,
+  );
 
   final TaskService _taskService;
   final FirestoreService _firestoreService;
+  final NotificationRepository _notificationRepository;
 
   Future<void> addTask({
     required String userId,
@@ -28,7 +34,15 @@ class TaskRepository {
       lastModified: DateTime.now(),
       syncStatus: 'pending',
     );
-    await _taskService.insertTask(task);
+    final taskId = await _taskService.insertTask(task);
+    final taskWithId = task.copyWith(id: taskId);
+    //This is testing Schedule a notification for the task
+    // await _notificationRepository.scheduleTestNotification(
+    //   id: taskId,
+    //   title: title,
+    //   body: 'Task "${task.title}" is due in 10 secs!',
+    // );
+    await _notificationRepository.scheduleTaskNotifications(taskWithId);
   }
 
   Future<List<Task>> getTasks(String userId) async {
@@ -44,6 +58,8 @@ class TaskRepository {
       syncStatus: 'pending',
     );
     await _taskService.updateTask(updatedTask);
+    await _notificationRepository.cancelNotification(task.id!);
+    await _notificationRepository.scheduleTaskNotifications(updatedTask);
   }
 
   Future<void> toggleTaskCompletion(Task task) async {
@@ -53,6 +69,11 @@ class TaskRepository {
       syncStatus: 'pending',
     );
     await _taskService.updateTask(updatedTask);
+    if (task.isCompleted) {
+      await _notificationRepository.cancelNotification(task.id!);
+    } else {
+      await _notificationRepository.scheduleTaskNotifications(updatedTask);
+    }
   }
 
   Future<void> deleteTask(int id, String userId) async {
@@ -66,6 +87,7 @@ class TaskRepository {
       lastModified: DateTime.now(),
     );
     await _taskService.updateTask(updatedTask);
+    await _notificationRepository.cancelNotification(task.id!);
   }
 
   Future<void> syncTasks(String userId) async {
@@ -121,7 +143,7 @@ class TaskRepository {
   }
 
   Future<void> fetchFromFirestore(String userId) async {
-   // await _taskService.clearTasksForUser(userId);
+    // await _taskService.clearTasksForUser(userId);
     await _syncFromFirestore(userId);
   }
 }
