@@ -11,15 +11,15 @@ class GenerativeAIService {
 
   Future<List<Map<String, String>>> generateTasks(String prompt) async {
     final aiPrompt = '''
-Generate a list of 5 to-do tasks based on the following prompt: "$prompt". 
+Generate a list of  to-do tasks based on the following prompt: "$prompt". 
 Each task should include:
-- A title (short, 3-5 words)
-- A description (1-2 sentences)
+- A title (short, 3-6 words)
+- A description (1-3 sentences)
 - A due date (in the format "YYYY-MM-DD")
 Format the response as a numbered list with the following structure:
 1. **Title**: [Task Title], **Description**: [Task Description], **Due Date**: [YYYY-MM-DD]
 2. **Title**: [Task Title], **Description**: [Task Description], **Due Date**: [YYYY-MM-DD]
-...and so on for all 5 tasks.
+...and so on for all  tasks.
 ''';
 
     final response = await _model.generateContent([Content.text(aiPrompt)]);

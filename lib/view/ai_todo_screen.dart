@@ -93,12 +93,6 @@ class AITodoScreen extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                trailing: IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed:
-                                      () =>
-                                          _editTask(context, viewModel, index),
-                                ),
                               );
                             },
                           ),
@@ -126,91 +120,6 @@ class AITodoScreen extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  void _editTask(BuildContext context, AITodoViewModel viewModel, int index) {
-    final task = viewModel.editedTasks[index];
-    final titleController = TextEditingController(text: task.title);
-    final descriptionController = TextEditingController(text: task.description);
-
-    showDialog(
-      context: context,
-      builder:
-          (dialogContext) => StatefulBuilder(
-            builder: (context, setState) {
-              DateTime? selectedDate = task.dueDate;
-
-              return AlertDialog(
-                title: const Text('Edit Task'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(hintText: 'Task Title'),
-                    ),
-                    const SizedBox(height: 8.0),
-                    TextField(
-                      controller: descriptionController,
-                      decoration: const InputDecoration(
-                        hintText: 'Task Description',
-                      ),
-                    ),
-                    const SizedBox(height: 8.0),
-                    Row(
-                      children: [
-                        Text(
-                          selectedDate != null
-                              ? 'Due: ${DateFormat('MMM d, yyyy').format(selectedDate)}'
-                              : 'No due date',
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: () async {
-                            final pickedDate = await showDatePicker(
-                              context:
-                                  dialogContext, // Use the dialogContext (parent context)
-                              initialDate: selectedDate ?? DateTime.now(),
-                              firstDate: DateTime.now(),
-                              lastDate: DateTime(2100),
-                            );
-                            if (pickedDate != null) {
-                              setState(() {
-                                selectedDate = pickedDate;
-                              });
-                            }
-                          },
-                          child: const Text('Pick Due Date'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final updatedTask = task.copyWith(
-                        title: titleController.text,
-                        description:
-                            descriptionController.text.isEmpty
-                                ? null
-                                : descriptionController.text,
-                        dueDate: selectedDate,
-                      );
-                      viewModel.updateTask(index, updatedTask);
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Save'),
-                  ),
-                ],
-              );
-            },
-          ),
     );
   }
 }
