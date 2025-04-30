@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:simple_todo_flutter/model/repository/task_repository.dart';
+import 'package:simple_todo_flutter/model/services/notification_service.dart';
 import 'package:simple_todo_flutter/model/task.dart';
 
 class TaskViewModel extends ChangeNotifier {
@@ -109,7 +110,6 @@ class TaskViewModel extends ChangeNotifier {
   Future<void> syncTasks() async {
     if (_currentUserId == null) return;
     var connectivityResult = await (Connectivity().checkConnectivity());
-    print('connectivityResult: $connectivityResult');
     if (connectivityResult.contains(ConnectivityResult.none)) return;
 
     _isSyncing = true;
@@ -150,9 +150,13 @@ class TaskViewModel extends ChangeNotifier {
     await syncTasks();
   }
 
-  void onUserLogout() {
+  void onUserLogout() async {
+    await FirebaseAuth.instance.signOut();
+    await NotificationService().cancelAllNotifications();
+    _taskRepository.clearTasksForUser(_currentUserId!);
     _currentUserId = null;
     _tasks = [];
+    _isSyncing = false;
     notifyListeners();
   }
 }

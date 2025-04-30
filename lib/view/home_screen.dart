@@ -1,8 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:simple_todo_flutter/model/services/notification_service.dart';
+import 'package:simple_todo_flutter/model/repository/notification_repository.dart';
+import 'package:simple_todo_flutter/model/repository/task_repository.dart';
+import 'package:simple_todo_flutter/model/services/firestore_service.dart';
+import 'package:simple_todo_flutter/model/services/task_service.dart';
 import 'package:simple_todo_flutter/view/ai_todo_screen.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
@@ -18,8 +20,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Future<void> _handleLogout() async {
-    await FirebaseAuth.instance.signOut();
-    await NotificationService().cancelAllNotifications();
+    TaskViewModel(
+      TaskRepository(
+        TaskService(),
+        FirestoreService(),
+        NotificationRepository(),
+      ),
+    ).onUserLogout();
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
@@ -99,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       title: Text(
                         task.title,
                         style: TextStyle(
-                          color: const Color(0xFF263238),
+                          color: const Color.fromARGB(255, 14, 102, 93),
                           fontSize: 25,
                           fontWeight: FontWeight.bold,
                           decoration:
@@ -114,14 +121,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           if (task.description != null)
                             Text(
                               task.description!,
-                              style: const TextStyle(color: Color(0xFF4DB6AC)),
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 10, 22, 26),
+                              ),
                             ),
                           Text(
                             task.dueDate != null
                                 ? 'Due: ${DateFormat('MMM d, yyyy').format(task.dueDate!)}'
                                 : 'No due date',
                             style: const TextStyle(
-                              color: Color.fromARGB(255, 24, 109, 100),
+                              color: Color.fromARGB(255, 21, 120, 110),
                             ),
                           ),
                         ],

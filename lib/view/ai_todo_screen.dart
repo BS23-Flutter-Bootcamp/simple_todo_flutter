@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:simple_todo_flutter/model/task.dart';
 import 'package:simple_todo_flutter/view_model/ai_viewmodel.dart';
 import 'package:intl/intl.dart';
 

@@ -36,12 +36,6 @@ class TaskRepository {
     );
     final taskId = await _taskService.insertTask(task);
     final taskWithId = task.copyWith(id: taskId);
-    //This is testing Schedule a notification for the task
-    // await _notificationRepository.scheduleTestNotification(
-    //   id: taskId,
-    //   title: title,
-    //   body: 'Task "${task.title}" is due in 10 secs!',
-    // );
     await _notificationRepository.scheduleTaskNotifications(taskWithId);
   }
 
@@ -96,12 +90,9 @@ class TaskRepository {
       for (final task in pendingTasks) {
         if (task.syncStatus == 'deleted') {
           await _firestoreService.deleteTask(userId, task.id!);
-        } else {
-          await _firestoreService.syncTask(userId, task);
-        }
-        if (task.syncStatus == 'deleted') {
           await _taskService.deleteTask(task.id!);
         } else {
+          await _firestoreService.syncTask(userId, task);
           await _taskService.updateTask(task.copyWith(syncStatus: 'synced'));
         }
       }
@@ -116,23 +107,36 @@ class TaskRepository {
   Future<void> _syncFromFirestore(String userId) async {
     final firestoreTasks = await _firestoreService.getTasks(userId);
     final localTasks = await _taskService.getTasks(userId);
-
     for (final firestoreTask in firestoreTasks) {
       final localTask = localTasks.firstWhere(
         (t) => t.id == firestoreTask.id,
         orElse:
             () => Task(
-              id: firestoreTask.id,
+              id: -1,
               userId: userId,
               title: '',
+              lastModified: DateTime(1970),
+              syncStatus: '',
               isCompleted: false,
-              lastModified: DateTime.now(),
-              syncStatus: 'synced',
             ),
       );
-      if (localTask.title.isEmpty ||
-          firestoreTask.lastModified.isAfter(localTask.lastModified)) {
-        await _taskService.insertTask(firestoreTask);
+      if (localTask.id == -1) {
+        await _taskService.insertTask(
+          firestoreTask.copyWith(syncStatus: 'synced'),
+        );
+        await _notificationRepository.scheduleTaskNotifications(
+          firestoreTask.copyWith(syncStatus: 'synced'),
+        );
+      } else if (firestoreTask.lastModified.isAfter(localTask.lastModified)) {
+        await _taskService.updateTask(firestoreTask);
+        if (firestoreTask.isCompleted != localTask.isCompleted) {
+          await _notificationRepository.cancelNotification(localTask.id!);
+          if (!firestoreTask.isCompleted) {
+            await _notificationRepository.scheduleTaskNotifications(
+              firestoreTask.copyWith(syncStatus: 'synced'),
+            );
+          }
+        }
       } else if (localTask.lastModified.isAfter(firestoreTask.lastModified) &&
           localTask.syncStatus == 'synced') {
         await _firestoreService.syncTask(userId, localTask);
@@ -143,7 +147,10 @@ class TaskRepository {
   }
 
   Future<void> fetchFromFirestore(String userId) async {
-    // await _taskService.clearTasksForUser(userId);
     await _syncFromFirestore(userId);
+  }
+
+  Future<void> clearTasksForUser(String userId) async {
+    await _taskService.clearTasksForUser(userId);
   }
 }
