@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_todo_flutter/model/services/notification_service.dart';
+import 'package:simple_todo_flutter/view/ai_todo_screen.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:simple_todo_flutter/view/add_task_screen.dart';
@@ -49,6 +50,16 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AITodoScreen()),
+              );
+            },
+            tooltip: 'Generate AI Tasks',
+          ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _handleLogout,
