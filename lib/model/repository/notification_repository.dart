@@ -46,18 +46,6 @@ class NotificationRepository {
     );
   }
 
-  Future<void> scheduleTestNotification({
-    required int id,
-    required String title,
-    required String body,
-  }) async {
-    await _notificationService.scheduleTestNotification(
-      id: id,
-      title: title,
-      body: body,
-    );
-  }
-
   Future<void> scheduleTaskNotifications(Task task) async {
     if (task.dueDate == null || task.isCompleted) {
       if (kDebugMode && task.isCompleted) {
@@ -72,7 +60,6 @@ class NotificationRepository {
       final scheduledMinutes = task.dueDate!.subtract(Duration(minutes: 15));
       final canUseExact = await _notificationService.canScheduleExactAlarms();
 
-      // Schedule 15-minute reminder
       if (scheduledMinutes.isAfter(DateTime.now())) {
         await scheduleNotification(
           id: task.id!,
@@ -99,9 +86,6 @@ class NotificationRepository {
   }
 
   Future<void> cancelTaskNotifications(int taskId) async {
-    if (kDebugMode) {
-      print('Canceling notifications for task: $taskId');
-    }
     try {
       await notificationsPlugin.cancel(taskId);
     } catch (e) {
@@ -111,17 +95,14 @@ class NotificationRepository {
     }
   }
 
-  /// Cancel a specific notification
   Future<void> cancelNotification(int id) async {
     await _notificationService.cancelNotification(id);
   }
 
-  /// Cancel all notifications
   Future<void> cancelAllNotifications() async {
     await _notificationService.cancelAllNotifications();
   }
 
-  /// Initialize the notification service
   Future<void> initNotification() async {
     await _notificationService.init();
   }

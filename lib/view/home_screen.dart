@@ -46,9 +46,11 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: Consumer<TaskViewModel>(
           builder: (context, viewModel, child) {
             return viewModel.isSyncing
-                ? const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(color: Colors.white),
+                ? const SizedBox(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2.0,
+                  ),
                 )
                 : IconButton(
                   icon: const Icon(Icons.sync, color: Colors.white),
@@ -79,7 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, viewModel, child) {
           final tasks = viewModel.tasks;
           return tasks.isEmpty
-              ? const Center(child: Text('No tasks yet! Add some.'))
+              ? viewModel.isSyncing
+                  ? const Center(child: Text('Syncing tasks...'))
+                  : const Center(child: Text('No tasks yet! Add some.'))
               : ListView.builder(
                 itemCount: tasks.length,
                 itemBuilder: (context, index) {

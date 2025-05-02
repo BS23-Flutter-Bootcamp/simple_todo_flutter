@@ -7,9 +7,10 @@ import 'package:simple_todo_flutter/view/signup_screen.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 
 class LoginViewModel {
+  LoginViewModel(this.authRepository);
   final LoginRepository authRepository;
   String? errorMessage;
-  LoginViewModel(this.authRepository);
+
   Future<void> signIn({
     required BuildContext context,
     required Function setState,

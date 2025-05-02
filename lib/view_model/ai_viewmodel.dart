@@ -3,6 +3,7 @@ import 'package:simple_todo_flutter/model/task.dart';
 import 'package:simple_todo_flutter/model/repository/ai_repository.dart';
 
 class AITodoViewModel with ChangeNotifier {
+  AITodoViewModel(this._repository);
   final AITodoRepository _repository;
 
   String _prompt = '';
@@ -10,8 +11,6 @@ class AITodoViewModel with ChangeNotifier {
   List<Task> _editedTasks = [];
   bool _isLoading = false;
   String? _errorMessage;
-
-  AITodoViewModel(this._repository);
 
   String get prompt => _prompt;
   List<Task> get tasks => _tasks;
@@ -40,9 +39,7 @@ class AITodoViewModel with ChangeNotifier {
     try {
       final generatedTasks = await _repository.generateTasks(_prompt);
       _tasks = generatedTasks;
-      _editedTasks = List.from(
-        generatedTasks,
-      ); // Create a deep copy for editing
+      _editedTasks = List.from(generatedTasks);
     } catch (e) {
       _errorMessage = 'Error generating tasks: $e';
     } finally {
@@ -54,7 +51,7 @@ class AITodoViewModel with ChangeNotifier {
   void updateTask(int index, Task updatedTask) {
     _editedTasks[index] = updatedTask.copyWith(
       lastModified: DateTime.now(),
-      syncStatus: 'pending', // Mark as pending since the task was edited
+      syncStatus: 'pending',
     );
     notifyListeners();
   }

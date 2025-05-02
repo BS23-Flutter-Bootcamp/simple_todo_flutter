@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:simple_todo_flutter/view/home_screen.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -11,7 +13,9 @@ class SplashScreen extends StatelessWidget {
       if (context.mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          FirebaseAuth.instance.currentUser != null
+              ? MaterialPageRoute(builder: (context) => const HomeScreen())
+              : MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       }
     });

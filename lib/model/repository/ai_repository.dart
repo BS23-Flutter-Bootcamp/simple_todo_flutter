@@ -21,14 +21,14 @@ class AITodoRepository {
         taskDataList.map((data) {
           final dueDate = DateFormat('yyyy-MM-dd').parse(data['dueDate']!);
           return Task(
-            id: null, // ID will be assigned by the database
+            id: null,
             userId: userId,
             title: data['title']!,
             description: data['description'],
             dueDate: dueDate,
             isCompleted: false,
             lastModified: DateTime.now(),
-            syncStatus: 'pending', // Mark as pending until synced
+            syncStatus: 'pending',
           );
         }).toList();
     return tasks;

@@ -6,7 +6,6 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
-  // Singleton pattern
   static final NotificationService _notificationService =
       NotificationService._internal();
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -27,9 +26,9 @@ class NotificationService {
         "thecodexhub",
         channelDescription:
             "This channel is responsible for all the local notifications",
-        // playSound: true,
-        // priority: Priority.high,
-        // importance: Importance.high,
+        playSound: true,
+        priority: Priority.high,
+        importance: Importance.high,
       );
 
   static const NotificationDetails notificationDetails = NotificationDetails(
@@ -113,18 +112,11 @@ class NotificationService {
         notificationDetails,
         androidScheduleMode: AndroidScheduleMode.exact,
       );
-      debugPendingNotifications();
     } on Exception catch (e) {
       if (kDebugMode) {
         print('Error scheduling test notification: $e');
       }
-      // Handle the error as needed
       return;
-    }
-    if (kDebugMode) {
-      print(
-        'zonedSchedule Scheduling test notification for: $title time ${scheduledTime.toString()} ',
-      );
     }
   }
 
@@ -135,7 +127,6 @@ class NotificationService {
     return notificationStatus.isGranted && alarmStatus.isGranted;
   }
 
-  // Update init method to check permissions
   Future<void> init() async {
     final AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings("mipmap/ic_launcher");
@@ -143,7 +134,6 @@ class NotificationService {
     final InitializationSettings initializationSettings =
         InitializationSettings(android: androidInitializationSettings);
 
-    // Request and check permissions
     await _requestPermissions();
     final hasPermissions = await checkPermissions();
     if (!hasPermissions) {

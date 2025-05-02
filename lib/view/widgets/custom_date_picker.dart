@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class CustomDatePicker extends StatelessWidget {
-  final DateTime? selectedDate;
-  final ValueChanged<DateTime?> onDateChanged;
-
   const CustomDatePicker({
     super.key,
     required this.selectedDate,
     required this.onDateChanged,
   });
+  final DateTime? selectedDate;
+  final ValueChanged<DateTime?> onDateChanged;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -54,7 +53,7 @@ class CustomDatePicker extends StatelessWidget {
           selectedDate != null
               ? DateFormat('MMM d, yyyy').format(selectedDate!)
               : 'Select a date',
-          style: const TextStyle(color: Color(0xFF263238)), 
+          style: const TextStyle(color: Color(0xFF263238)),
         ),
       ),
     );

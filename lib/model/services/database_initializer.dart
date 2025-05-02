@@ -16,7 +16,12 @@ class DatabaseInitializer {
   Future<Database> _initDB(String filePath) async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
-    return await openDatabase(path, version: 4, onCreate: _createDB, onUpgrade: _upgradeDB);
+    return await openDatabase(
+      path,
+      version: 4,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -40,12 +45,20 @@ class DatabaseInitializer {
       await _createDB(db, newVersion);
     }
     if (oldVersion < 3) {
-      await db.execute('ALTER TABLE tasks ADD COLUMN isCompleted INTEGER NOT NULL DEFAULT 0');
+      await db.execute(
+        'ALTER TABLE tasks ADD COLUMN isCompleted INTEGER NOT NULL DEFAULT 0',
+      );
     }
     if (oldVersion < 4) {
-      await db.execute('ALTER TABLE tasks ADD COLUMN userId TEXT NOT NULL DEFAULT ""');
-      await db.execute('ALTER TABLE tasks ADD COLUMN lastModified TEXT NOT NULL DEFAULT "2025-01-01T00:00:00Z"');
-      await db.execute('ALTER TABLE tasks ADD COLUMN syncStatus TEXT NOT NULL DEFAULT "pending"');
+      await db.execute(
+        'ALTER TABLE tasks ADD COLUMN userId TEXT NOT NULL DEFAULT ""',
+      );
+      await db.execute(
+        'ALTER TABLE tasks ADD COLUMN lastModified TEXT NOT NULL DEFAULT "2025-01-01T00:00:00Z"',
+      );
+      await db.execute(
+        'ALTER TABLE tasks ADD COLUMN syncStatus TEXT NOT NULL DEFAULT "pending"',
+      );
     }
   }
 }
