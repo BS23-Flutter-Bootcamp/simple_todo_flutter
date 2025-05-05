@@ -3,8 +3,9 @@ import 'package:simple_todo_flutter/model/task.dart';
 import 'package:simple_todo_flutter/model/repository/ai_repository.dart';
 
 class AITodoViewModel with ChangeNotifier {
-  AITodoViewModel(this._repository);
-  final AITodoRepository _repository;
+  AITodoViewModel(this.repository);
+
+  final AITodoRepository repository;
 
   String _prompt = '';
   List<Task> _tasks = [];
@@ -37,7 +38,7 @@ class AITodoViewModel with ChangeNotifier {
     notifyListeners();
 
     try {
-      final generatedTasks = await _repository.generateTasks(_prompt);
+      final generatedTasks = await repository.generateTasks(_prompt);
       _tasks = generatedTasks;
       _editedTasks = List.from(generatedTasks);
     } catch (e) {
@@ -62,7 +63,7 @@ class AITodoViewModel with ChangeNotifier {
       notifyListeners();
       return;
     }
-    _repository.saveTasks(_editedTasks);
+    repository.saveTasks(_editedTasks);
     _tasks.clear();
     _editedTasks.clear();
     _prompt = '';

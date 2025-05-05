@@ -5,10 +5,10 @@ import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:intl/intl.dart';
 
 class AITodoRepository {
-  final GenerativeAIService _aiService;
-  final TaskViewModel _taskViewModel;
+  AITodoRepository(this.aiService, this.taskViewModel);
 
-  AITodoRepository(this._aiService, this._taskViewModel);
+  final GenerativeAIService aiService;
+  final TaskViewModel taskViewModel;
 
   Future<List<Task>> generateTasks(String prompt) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
@@ -16,7 +16,7 @@ class AITodoRepository {
       throw Exception('User not logged in');
     }
 
-    final taskDataList = await _aiService.generateTasks(prompt);
+    final taskDataList = await aiService.generateTasks(prompt);
     final tasks =
         taskDataList.map((data) {
           final dueDate = DateFormat('yyyy-MM-dd').parse(data['dueDate']!);
@@ -36,7 +36,7 @@ class AITodoRepository {
 
   void saveTasks(List<Task> tasks) {
     for (final task in tasks) {
-      _taskViewModel.addTask(
+      taskViewModel.addTask(
         title: task.title,
         description: task.description,
         dueDate: task.dueDate,
