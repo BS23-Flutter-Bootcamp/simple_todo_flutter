@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:simple_todo_flutter/view/home_screen.dart';
 import 'package:simple_todo_flutter/view/signup_screen.dart';
 import 'package:simple_todo_flutter/view/widgets/loading.dart';
@@ -7,7 +6,9 @@ import 'package:simple_todo_flutter/view/widgets/login_form_fileds.dart';
 import 'package:simple_todo_flutter/view_model/login_viewmodel.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, required this.viewModel});
+
+  final LoginViewModel viewModel;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -84,85 +85,88 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LoginViewModel>(
-      builder: (context, loginViewModel, child) {
-        return Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+    return Scaffold(
+      body: SafeArea(
+        child: ListenableBuilder(
+          listenable: widget.viewModel,
+          builder: (context, _) {
+            return Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF00695C), Color(0xFF4DB6AC)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
-            ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Card(
-                  elevation: 8.0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16.0),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          LoginFormFields(
-                            emailController: emailController,
-                            passwordController: passwordController,
-                            formKey: _formKey,
-                          ),
-                          const SizedBox(height: 16.0),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed:
-                                  loginViewModel.isLoading
-                                      ? null
-                                      : () => _handleSignIn(loginViewModel),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF00695C),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16.0,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Card(
+                    elevation: 8.0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            LoginFormFields(
+                              emailController: emailController,
+                              passwordController: passwordController,
+                              formKey: _formKey,
+                            ),
+                            const SizedBox(height: 16.0),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed:
+                                    widget.viewModel.isLoading
+                                        ? null
+                                        : () => _handleSignIn(widget.viewModel),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF00695C),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16.0,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                              ),
-                              child:
-                                  loginViewModel.isLoading
-                                      ? Loading()
-                                      : const Text(
-                                        'Login',
-                                        style: TextStyle(
-                                          fontSize: 16.0,
-                                          color: Colors.white,
+                                child:
+                                    widget.viewModel.isLoading
+                                        ? Loading()
+                                        : const Text(
+                                          'Login',
+                                          style: TextStyle(
+                                            fontSize: 16.0,
+                                            color: Colors.white,
+                                          ),
                                         ),
-                                      ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16.0),
-                          TextButton(
-                            onPressed:
-                                () => _handleCreateAccount(loginViewModel),
-                            child: const Text(
-                              'Not a member? Create account',
-                              style: TextStyle(color: Colors.blue),
+                            const SizedBox(height: 16.0),
+                            TextButton(
+                              onPressed:
+                                  () => _handleCreateAccount(widget.viewModel),
+                              child: const Text(
+                                'Not a member? Create account',
+                                style: TextStyle(color: Colors.blue),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-      },
+            );
+          },
+        ),
+      ),
     );
   }
 }

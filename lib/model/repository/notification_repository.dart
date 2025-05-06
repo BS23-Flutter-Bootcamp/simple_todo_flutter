@@ -6,12 +6,13 @@ import 'package:simple_todo_flutter/model/task.dart';
 import 'package:simple_todo_flutter/model/services/notification_service.dart';
 
 class NotificationRepository {
+  NotificationRepository([NotificationService? notificationService])
+    : _notificationService = notificationService ?? NotificationService();
+
   final NotificationService _notificationService;
   final FlutterLocalNotificationsPlugin notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  NotificationRepository([NotificationService? notificationService])
-    : _notificationService = notificationService ?? NotificationService();
   Future<void> showNotification({
     required int id,
     required String title,

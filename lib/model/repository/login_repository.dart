@@ -1,7 +1,7 @@
 import 'package:simple_todo_flutter/model/services/login_service.dart';
 
 class LoginRepository {
-  LoginRepository(this.loginService);
+  LoginRepository({required this.loginService});
 
   final LoginService loginService;
 

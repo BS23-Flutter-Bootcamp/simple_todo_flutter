@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_todo_flutter/model/repository/signup_repository.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
+import 'package:simple_todo_flutter/view_model/login_viewmodel.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 
 class SignUpViewModel {
@@ -38,14 +39,20 @@ class SignUpViewModel {
 
       final userId = authRepository.firebaseAuth.currentUser?.uid;
       if (userId != null) {
-        final taskViewModel = Provider.of<TaskViewModel>(context, listen: false);
+        final taskViewModel = Provider.of<TaskViewModel>(
+          context,
+          listen: false,
+        );
         await taskViewModel.onUserLogin(userId);
       }
 
       if (context.mounted) {
+        LoginViewModel viewModel = context.read<LoginViewModel>();
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(
+            builder: (context) => LoginScreen(viewModel: viewModel),
+          ),
         );
       }
     } catch (e) {

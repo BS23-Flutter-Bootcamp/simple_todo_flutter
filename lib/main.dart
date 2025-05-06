@@ -49,7 +49,10 @@ void main() async {
               (context) => AITodoViewModel(context.read<AITodoRepository>()),
         ),
         ChangeNotifierProvider(
-          create: (_) => LoginViewModel(LoginRepository(LoginService())),
+          create:
+              (_) => LoginViewModel(
+                loginRepository: LoginRepository(loginService: LoginService()),
+              ),
         ),
       ],
       child: const MyApp(),

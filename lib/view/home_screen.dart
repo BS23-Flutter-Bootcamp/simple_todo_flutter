@@ -7,6 +7,7 @@ import 'package:simple_todo_flutter/model/services/firestore_service.dart';
 import 'package:simple_todo_flutter/model/services/task_service.dart';
 import 'package:simple_todo_flutter/view/ai_todo_screen.dart';
 import 'package:simple_todo_flutter/view/login_screen.dart';
+import 'package:simple_todo_flutter/view_model/login_viewmodel.dart';
 import 'package:simple_todo_flutter/view_model/task_viewmodel.dart';
 import 'package:simple_todo_flutter/view/add_task_screen.dart';
 import 'package:simple_todo_flutter/view/edit_task_screen.dart';
@@ -28,9 +29,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     ).onUserLogout();
     if (context.mounted) {
+      LoginViewModel viewModel = context.read<LoginViewModel>();
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
+        MaterialPageRoute(
+          builder: (context) => LoginScreen(viewModel: viewModel),
+        ),
       );
     }
   }
